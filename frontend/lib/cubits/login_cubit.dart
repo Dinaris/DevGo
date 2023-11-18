@@ -37,13 +37,16 @@ class LoginCubit extends Cubit<LoginState> {
 
       emit(state.copyWith(
           isLoading: false,
+          error: loginResponse.isAuthorized
+              ? ""
+              : "Wrong email or password. Please try again",
           isAuthorized: loginResponse.isAuthorized));
 
       return loginResponse.isAuthorized;
     } catch (error) {
       emit(state.copyWith(
           isLoading: false,
-          error: error.toString(),
+          error: "Error during login. Please try again",
           isAuthorized: false));
     }
     return false;

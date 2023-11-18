@@ -41,6 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  _buildMessage(hintStyle),
                   _buildEmailField(loginCubit),
                   const SizedBox(height: 25),
                   _buildPasswordField(loginCubit),
@@ -106,6 +107,23 @@ class _LoginScreenState extends State<LoginScreen> {
             }
         ),
       ],
+    );
+  }
+
+  _buildMessage(TextStyle style) {
+    return BlocBuilder<LoginCubit, LoginState>(
+      buildWhen: (previous, current) => (previous != current),
+      builder: (context, state) {
+        if (state.error.isNotEmpty) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 30.0),
+            child: Text(state.error,
+                style: style.copyWith(color: Colors.red)),
+          );
+        } else {
+          return const SizedBox.shrink();
+        }
+      },
     );
   }
 
