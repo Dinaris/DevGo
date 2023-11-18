@@ -3,6 +3,8 @@ import 'dart:ui' as ui;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dev_go/models/custom_location.dart';
+import 'package:dev_go/repositories/nft_repository.dart';
+import 'package:dev_go/utils/dio_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,7 +12,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 
 import '../components/rounded_button.dart';
-import '../models/location.dart';
+import '../models/nft/user_history_response.dart';
 import '../repositories/location_repository.dart';
 import '../theme/constants.dart';
 
@@ -18,8 +20,10 @@ class MapScreen extends StatefulWidget {
   static String routeName = "/map";
 
   const MapScreen({
-    Key? key,
+    Key? key, required this.userEmail,
   }) : super(key: key);
+
+  final String userEmail;
 
   @override
   State<MapScreen> createState() => _MapScreenState();
@@ -30,6 +34,7 @@ class _MapScreenState extends State<MapScreen> {
 
   List<Marker> markers = [];
   final ILocationRepository locationRepository = LocationRepository();
+  final INftRepository nftRepository = NftRepository(DioClient().init());
 
   @override
   void initState() {
@@ -54,9 +59,18 @@ class _MapScreenState extends State<MapScreen> {
         markers: Set.from(markers),
         initialCameraPosition: initialCameraPosition,
         onMapCreated: (GoogleMapController controller) async {
-          final locations = await locationRepository.getLocations();
+          //var locations = List<Location>.empty();
+          var history = List<UserHistory>.empty();
+          context.loaderOverlay.show();
+          try {
+            //locations = await locationRepository.getLocations();
+            history = await nftRepository.getUserHistory(widget.userEmail);
+          } finally {
+            context.loaderOverlay.hide();
+          }
+
           setState(() {
-            _addMarkers(locations);
+            _addMarkers(history);
           });
 
           Future.delayed(
@@ -64,7 +78,7 @@ class _MapScreenState extends State<MapScreen> {
                   () => controller.animateCamera(
                   CameraUpdate.newLatLngBounds(
                       _boundsFromLatLngList(
-                          locations.map((location) => LatLng(
+                          history.map((location) => LatLng(
                               location.latitude.toDouble(),
                               location.longitude.toDouble())).toList()
                       ),
@@ -98,8 +112,16 @@ class _MapScreenState extends State<MapScreen> {
         .buffer.asUint8List();
   }
 
-  void _addMarkers(List<Location> locations) {
-    for (final location in locations) {
+  void _addMarkers(List<UserHistory> history) {
+    for (final location in history) {
+      BitmapDescriptor icon = BitmapDescriptor.defaultMarker;
+      if (location.visited == 1) {
+        if (location.isOG == 1) {
+          icon = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
+        } else {
+          icon = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure);
+        }
+      }
       markers.add(Marker(
           markerId: MarkerId(location.id.toString()),
           infoWindow: InfoWindow(title: location.name, onTap: () async {
@@ -115,7 +137,7 @@ class _MapScreenState extends State<MapScreen> {
             }
             _showStartMintingDialog(isNearby, location);
           }),
-          icon: markerIcon ?? BitmapDescriptor.defaultMarker,
+          icon: markerIcon ?? icon,
           position: LatLng(
               location.latitude.toDouble(),
               location.longitude.toDouble())
@@ -141,7 +163,7 @@ class _MapScreenState extends State<MapScreen> {
 
   _showStartMintingDialog(
       bool isNearby,
-      Location location,
+      UserHistory location,
   ) {
     final double bottomSheetPadding =
         MediaQueryData.fromWindow(WidgetsBinding.instance.window).padding.top;
@@ -196,7 +218,7 @@ class _MapScreenState extends State<MapScreen> {
                               padding: EdgeInsets.only(
                                   bottom: isNearby ? 10.0 : 45.0),
                               child: isNearby
-                                  ? _buildMintButton()
+                                  ? _buildMintButton(widget.userEmail, location)
                                   : _buildTooFarWarning())),
                     )
                   ],
@@ -207,7 +229,7 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  _buildImage(Location location) {
+  _buildImage(UserHistory location) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: SizedBox(
@@ -227,7 +249,7 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  _buildMintButton() {
+  _buildMintButton(String email, UserHistory location) {
     bool isTapped = false;
 
     return TextButton(
@@ -236,12 +258,23 @@ class _MapScreenState extends State<MapScreen> {
             return;
           }
 
+          Navigator.of(context).pop();
+          context.loaderOverlay.show();
+          try {
+            // call minting endpoint
+            final newList = await nftRepository.mint(email, location.id);
+            setState(() {
+              markers.clear();
+              _addMarkers(newList);
+            });
+          } finally {
+            context.loaderOverlay.hide();
+          }
+
           // allow to click again only after 2 seconds to prevent double tap
           Future.delayed(const Duration(seconds: 2))
               .then((_) => isTapped = false);
           isTapped = true;
-
-          // TODO: call minting endpoint
         },
         child: RoundedButton(
             width: 340.0,
