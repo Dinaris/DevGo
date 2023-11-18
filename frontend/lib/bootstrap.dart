@@ -10,6 +10,7 @@ import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platf
 
 import 'app.dart';
 import 'app_block_observer.dart';
+import 'repositories/authentication_repository.dart';
 
 void bootstrap() async {
   await runZonedGuarded(
@@ -36,12 +37,14 @@ void bootstrap() async {
 
       // Initialize repositories/helpers here
       await CacheHelper.init();
+      final AuthenticationRepository authenticationRepository =
+        AuthenticationRepository();
       //DioClient _dioClient = DioClient();
       //Dio _client = _dioClient.init();
 
       await BlocOverrides.runZoned(
             () async => runApp(App(
-          // authRepository: _authenticationRepository,
+          authRepository: authenticationRepository,
         )),
         blocObserver: AppBlocObserver(),
       );

@@ -1,26 +1,36 @@
 import 'package:dev_go/components/custom_text_form_field.dart';
 import 'package:dev_go/components/rounded_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../cubits/login_cubit.dart';
 import '../theme/constants.dart';
 import '../utils/size_config.dart';
 import '../utils/validators.dart';
 
-class LoginScreen extends StatelessWidget {
-  final _signUpFormKey = GlobalKey<FormState>();
-
-  TextStyle hintStyle = GoogleFonts.nunito(
-      color: kTextLightColor2, fontSize: 18, fontWeight: FontWeight.w400);
+class LoginScreen extends StatefulWidget {
 
   LoginScreen({Key? key}) : super(key: key);
 
   @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _loginFormKey = GlobalKey<FormState>();
+
+  TextStyle hintStyle = GoogleFonts.nunito(
+      color: kTextLightColor2, fontSize: 18, fontWeight: FontWeight.w400);
+
+  @override
   Widget build(BuildContext context) {
+    final LoginCubit loginCubit = context.read<LoginCubit>();
+
     return WillPopScope(
       onWillPop: () async => false,
       child: Form(
-        key: _signUpFormKey,
+        key: _loginFormKey,
         child: Scaffold(
           resizeToAvoidBottomInset: false,
           body: Container(
@@ -31,9 +41,9 @@ class LoginScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildEmailField(),
+                  _buildEmailField(loginCubit),
                   const SizedBox(height: 25),
-                  _buildPasswordField(),
+                  _buildPasswordField(loginCubit),
                   const SizedBox(height: 25),
                   Expanded(
                       child: Align(
@@ -41,7 +51,7 @@ class LoginScreen extends StatelessWidget {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              _buildLoginButton(context),
+                              _buildLoginButton(loginCubit),
                             ],
                           )
                       )
@@ -55,7 +65,7 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  _buildEmailField() {
+  _buildEmailField(LoginCubit loginCubit) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -65,19 +75,19 @@ class LoginScreen extends StatelessWidget {
             )),
         const SizedBox(height: 10),
         CustomTextFormField(
-            //initialValue: ,
+            //initialValue: loginCubit.state.email,
             hintText: "Your Email",
             keyboardType: TextInputType.emailAddress,
             validator: Validators.validateEmail,
             onChanged: (value) {
-
+              loginCubit.onEmailChange(value);
             }
         ),
       ],
     );
   }
 
-  _buildPasswordField() {
+  _buildPasswordField(LoginCubit loginCubit) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -88,20 +98,26 @@ class LoginScreen extends StatelessWidget {
         const SizedBox(height: 10),
         CustomTextFormField(
             hintText: "Password",
+            obscureText: true,
             keyboardType: TextInputType.visiblePassword,
             validator: Validators.validateIfNotEmpty,
             onChanged: (value) {
-
+              loginCubit.onPasswordChange(value);
             }
         ),
       ],
     );
   }
 
-  _buildLoginButton(BuildContext context) {
+  _buildLoginButton(LoginCubit loginCubit) {
     return TextButton(
       onPressed: () async {
+        if (!_loginFormKey.currentState!.validate()) {
+          return;
+        }
+        if (await loginCubit.onLogin()) {
 
+        }
       },
       child: RoundedButton(
           width: double.infinity,
