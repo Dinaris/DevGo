@@ -3,13 +3,13 @@ const app = express();
 const port = 3000;
 
 const { mintNFT } = require("./services/mintNFT");
-const { getHistory } = require("./services/DB");
+const { getHistory, getLocations, getLocationById } = require("./services/DB");
 
 app.get("/ping", (req, res) => {
   res.send("Pong");
 });
 
-app.get("/mint/:id", async (req, res) => {
+app.get("/mint/:user_id/:location_id", async (req, res) => {
   try {
     const NFT_id = req.params.id;
     if (NFT_id) {
@@ -27,6 +27,25 @@ app.get("/history/:email", async (req, res) => {
   try {
     const email = req.params.email;
     const result = await getHistory(email);
+    res.send(result);
+  } catch (e) {
+    res.status(400).send(e);
+  }
+});
+
+app.get("/locations", async (req, res) => {
+  try {
+    const result = await getLocations();
+    res.send(result);
+  } catch (e) {
+    res.status(400).send(e);
+  }
+});
+
+app.get("/location/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const result = await getLocationById(id);
     res.send(result);
   } catch (e) {
     res.status(400).send(e);

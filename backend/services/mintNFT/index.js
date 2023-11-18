@@ -1,6 +1,7 @@
 const { ethers, Signer } = require("ethers");
 const fs = require("fs");
 const path = require("path");
+const DB = require("../DB");
 
 const QUICKNODE_HTTP_ENDPOINT = "https://sepolia-rpc.scroll.io/";
 const contractAddress = "0xe141aAE338eC439af115ae86925CaDb46b53CC5B";
@@ -13,6 +14,10 @@ const NFT_ID_URI_MAP = new Map([
   [
     "2",
     "https://crimson-given-kangaroo-552.mypinata.cloud/ipfs/QmVYcYeX3XY2swT4obB24465M9kfJo3uSY2U9o1ABYT2RW?_gl=1*bmten6*_ga*MTkzOTQ3MTQ1OS4xNzAwMjk4MDAw*_ga_5RMPXG14TE*MTcwMDI5ODAwMC4xLjEuMTcwMDMwMDUyOC40LjAuMA..",
+  ],
+  [
+    "3",
+    "https://crimson-given-kangaroo-552.mypinata.cloud/ipfs/QmNs9rnHuLwN19JQRRnm7BsEhkMQivQbso8e62vhkJmGC6?_gl=1*7kn6ml*_ga*MTkzOTQ3MTQ1OS4xNzAwMjk4MDAw*_ga_5RMPXG14TE*MTcwMDMyMjE5NC40LjEuMTcwMDMyMjU0OC4yLjAuMA..",
   ],
 ]);
 
@@ -84,6 +89,7 @@ async function mintNFT(NFT_id) {
           "Transaction is successful!!!" + "\n" + "Transaction Hash:",
           hash + "\n" + "Block Number: " + blockNumber
         );
+        await DB.putToHistory(e);
         resolve({
           hash,
           blockNumber,

@@ -17,6 +17,55 @@ function closeConnection(instance) {
   console.log("Close DB connection...");
 }
 
+function putToHistory(email, location_id, TRX_HASH) {
+  return new Promise(async (resolve, reject) => {
+    connection = getInstance();
+
+    const query = `INSERT INTO history (email, location_id, createdAt, TRX_HASH) VALUES (?,?,?,?)`;
+
+    connection.query(
+      query,
+      [email, location_id, new Date(), TRX_HASH],
+      function (error, results, fields) {
+        if (error) reject(error);
+        resolve(results ? results : []);
+      }
+    );
+
+    closeConnection(connection);
+  });
+}
+
+function getLocations() {
+  return new Promise(async (resolve, reject) => {
+    connection = getInstance();
+
+    const query = "SELECT * FROM locations";
+
+    connection.query(query, function (error, results, fields) {
+      if (error) reject(error);
+      resolve(results ? results : []);
+    });
+
+    closeConnection(connection);
+  });
+}
+
+function getLocationById(id) {
+  return new Promise(async (resolve, reject) => {
+    connection = getInstance();
+
+    const query = "SELECT * FROM locations WHERE id = ?";
+
+    connection.query(query, [id], function (error, results, fields) {
+      if (error) reject(error);
+      resolve(results ? results : []);
+    });
+
+    closeConnection(connection);
+  });
+}
+
 function getHistory(email) {
   return new Promise(async (resolve, reject) => {
     connection = getInstance();
@@ -50,4 +99,7 @@ function getHistory(email) {
 
 module.exports = {
   getHistory,
+  putToHistory,
+  getLocations,
+  getLocationById,
 };
