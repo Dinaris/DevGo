@@ -4,17 +4,20 @@ class Location {
     required this.name,
     required this.latitude,
     required this.longitude,
+    required this.imageUrl,
   });
   late final num id;
   late final String name;
   late final num latitude;
   late final num longitude;
+  late final String imageUrl;
 
   Location.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
     latitude = json['latitude'];
     longitude = json['longitude'];
+    imageUrl = json['image_url'];
   }
 
   Map<String, dynamic> toJson() {
@@ -23,6 +26,7 @@ class Location {
     _data['name'] = name;
     _data['latitude'] = latitude;
     _data['longitude'] = longitude;
+    _data['image_url'] = imageUrl;
     return _data;
   }
 
@@ -31,5 +35,6 @@ class Location {
     name: "",
     latitude: 0.0,
     longitude: 0.0,
+    imageUrl: "",
   );
 }
