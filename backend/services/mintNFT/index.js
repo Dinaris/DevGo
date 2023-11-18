@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const DB = require("../DB");
 
-const QUICKNODE_HTTP_ENDPOINT = "https://sepolia-rpc.scroll.io/";
+const QUICKNODE_HTTPS_ENDPOINT = "https://sepolia-rpc.scroll.io/";
 const contractAddress = "0xe141aAE338eC439af115ae86925CaDb46b53CC5B";
 const walletAddress = "0x393a85ecaA4D45AA90869EF27E15c256EF6D1E78";
 
@@ -16,7 +16,7 @@ const contractAbi = fs
   .readFileSync(path.resolve(__dirname, "./abi.json"))
   .toString();
 
-const provider = new ethers.providers.JsonRpcProvider(QUICKNODE_HTTP_ENDPOINT);
+const provider = new ethers.providers.JsonRpcProvider(QUICKNODE_HTTPS_ENDPOINT);
 
 const contractInstance = new ethers.Contract(
   contractAddress,
@@ -31,7 +31,7 @@ async function getGasPrice() {
   return feeData;
 }
 
-async function getNonce(signer) {
+async function getNonce(wallet) {
   let nonce = await provider.getTransactionCount(wallet.address);
   return nonce;
 }
