@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dev_go/models/custom_location.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -141,7 +142,7 @@ class _MapScreenState extends State<MapScreen> {
   _showStartMintingDialog(
       bool isNearby,
       Location location,
-      ) {
+  ) {
     final double bottomSheetPadding =
         MediaQueryData.fromWindow(WidgetsBinding.instance.window).padding.top;
     showModalBottomSheet(
@@ -169,7 +170,6 @@ class _MapScreenState extends State<MapScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 5.0),
                     Center(
                       child: Container(
                         decoration: BoxDecoration(
@@ -177,10 +177,10 @@ class _MapScreenState extends State<MapScreen> {
                             shape: BoxShape.rectangle,
                             border: Border.all(color: const Color(0xFFC7C7C7))),
                         width: 37.0,
-                        height: 5.0,
+                        height: 3.0,
                       ),
                     ),
-                    const SizedBox(height: 40.0),
+                    const SizedBox(height: 20.0),
                     Text(location.name,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.nunito(
@@ -188,6 +188,7 @@ class _MapScreenState extends State<MapScreen> {
                             fontWeight: FontWeight.w800,
                             fontSize: 24)),
                     const SizedBox(height: 12.0),
+                    _buildImage(location),
                     Expanded(
                       child: Align(
                           alignment: Alignment.bottomCenter,
@@ -203,6 +204,26 @@ class _MapScreenState extends State<MapScreen> {
           ),
         );
       },
+    );
+  }
+
+  _buildImage(Location location) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: SizedBox(
+        height: 100,
+        child: CachedNetworkImage(
+          imageUrl: location.imageUrl,
+          progressIndicatorBuilder:
+            (context, url, downloadProgress) =>
+              Center(
+                child: SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: CircularProgressIndicator(value: downloadProgress.progress))),
+          errorWidget: (context, url, error) => Image.asset("assets/images/token_go.jpeg"),
+          fit: BoxFit.cover),
+      ),
     );
   }
 

@@ -5,9 +5,27 @@ import '../models/location.dart';
 
 const maxAllowedDistanceInMeters = 50;
 List<Location> locations = [
-  Location(id: 1, name: "Istanbul Congress Center", latitude: 41.0463638, longitude: 28.9889354),
-  Location(id: 2, name: "Taksim Square", latitude: 41.037666, longitude: 28.9848298),
-  Location(id: 3, name: "Galata Tower", latitude: 41.0256299, longitude: 28.9731427),
+  Location(
+    id: 1,
+    name: "Istanbul Congress Center",
+    latitude: 41.0463638,
+    longitude: 28.9889354,
+    imageUrl: "https://crimson-given-kangaroo-552.mypinata.cloud/ipfs/Qmbtqtna2GJaEmhow4HZ9kVmLTaZwvpMEksVa4WpKDsA2P?_gl=1*m7qrs0*_ga*MTkzOTQ3MTQ1OS4xNzAwMjk4MDAw*_ga_5RMPXG14TE*MTcwMDI5ODAwMC4xLjEuMTcwMDI5ODgzNi4zOS4wLjA.",
+  ),
+  Location(
+    id: 2,
+    name: "Taksim Square",
+    latitude: 41.037666,
+    longitude: 28.9848298,
+    imageUrl: "https://crimson-given-kangaroo-552.mypinata.cloud/ipfs/Qma1TXhjCdnzEqHBk3u17HXTKcbyvwiz2tEfz9uhXWEHSw?_gl=1*1lgopj2*_ga*MTkzOTQ3MTQ1OS4xNzAwMjk4MDAw*_ga_5RMPXG14TE*MTcwMDI5ODAwMC4xLjEuMTcwMDMwMDMxNS42MC4wLjA.",
+  ),
+  Location(
+    id: 3,
+    name: "Galata Tower",
+    latitude: 41.0256299,
+    longitude: 28.9731427,
+    imageUrl: "",
+  ),
 ];
 
 abstract class ILocationRepository {
