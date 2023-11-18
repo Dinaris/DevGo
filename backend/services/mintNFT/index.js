@@ -1,20 +1,11 @@
 const { ethers, Signer } = require("ethers");
 const fs = require("fs");
 const path = require("path");
+const DB = require("../DB");
 
-const QUICKNODE_HTTP_ENDPOINT = "https://sepolia-rpc.scroll.io/";
+const QUICKNODE_HTTPS_ENDPOINT = "https://sepolia-rpc.scroll.io/";
 const contractAddress = "0xe141aAE338eC439af115ae86925CaDb46b53CC5B";
 const walletAddress = "0x393a85ecaA4D45AA90869EF27E15c256EF6D1E78";
-const NFT_ID_URI_MAP = new Map([
-  [
-    "1",
-    "https://crimson-given-kangaroo-552.mypinata.cloud/ipfs/QmUtMNYGsznRpm6VMePuj7GHmjCuGh34xJKD3mfK9ULoK2?_gl=1*kuld6s*_ga*MTkzOTQ3MTQ1OS4xNzAwMjk4MDAw*_ga_5RMPXG14TE*MTcwMDI5ODAwMC4xLjEuMTcwMDI5OTc0Mi4zNi4wLjA.",
-  ],
-  [
-    "2",
-    "https://crimson-given-kangaroo-552.mypinata.cloud/ipfs/QmVYcYeX3XY2swT4obB24465M9kfJo3uSY2U9o1ABYT2RW?_gl=1*bmten6*_ga*MTkzOTQ3MTQ1OS4xNzAwMjk4MDAw*_ga_5RMPXG14TE*MTcwMDI5ODAwMC4xLjEuMTcwMDMwMDUyOC40LjAuMA..",
-  ],
-]);
 
 const privateKey = fs
   .readFileSync(path.resolve(__dirname, "./.privatekey"))
@@ -25,7 +16,7 @@ const contractAbi = fs
   .readFileSync(path.resolve(__dirname, "./abi.json"))
   .toString();
 
-const provider = new ethers.providers.JsonRpcProvider(QUICKNODE_HTTP_ENDPOINT);
+const provider = new ethers.providers.JsonRpcProvider(QUICKNODE_HTTPS_ENDPOINT);
 
 const contractInstance = new ethers.Contract(
   contractAddress,
@@ -40,29 +31,36 @@ async function getGasPrice() {
   return feeData;
 }
 
-async function getNonce(signer) {
+async function getNonce(wallet) {
   let nonce = await provider.getTransactionCount(wallet.address);
   return nonce;
 }
 
-async function mintNFT(NFT_id) {
+async function mintNFT(email, location_id) {
   return new Promise(async (resolve, reject) => {
     try {
       const nonce = await getNonce(wallet);
       const gasFee = await getGasPrice();
-      console.log(typeof NFT_id);
-      console.log(NFT_id);
 
-      const NFT_URI = NFT_ID_URI_MAP.get(NFT_id);
+      const location = await DB.getLocationById(location_id);
+      const user = await DB.getUserByEmail(email);
+
+      const NFT_URI = location && location[0] ? location[0].NFT_URI : null;
+      const user_id = user && user[0] ? user[0].id : null;
 
       if (!NFT_URI) {
-        reject(`NFT token with id = ${NFT_id} not found`);
+        reject(`NFT_URI not found for location id ${location_id}`);
+        return;
+      }
+
+      if (!user_id) {
+        reject(`User with email ${email} does not exists`);
         return;
       }
 
       let rawTxn = await contractInstance.populateTransaction.mintNFT(
         walletAddress,
-        NFT_ID_URI_MAP.get(NFT_id),
+        NFT_URI,
         {
           gasPrice: gasFee,
           nonce: nonce,
@@ -84,10 +82,9 @@ async function mintNFT(NFT_id) {
           "Transaction is successful!!!" + "\n" + "Transaction Hash:",
           hash + "\n" + "Block Number: " + blockNumber
         );
-        resolve({
-          hash,
-          blockNumber,
-        });
+        await DB.putToHistory(email, location_id, hash);
+        let response = await DB.getHistory(email);
+        resolve(response);
       } else {
         reject("Error submitting transaction");
         console.log("Error submitting transaction");
