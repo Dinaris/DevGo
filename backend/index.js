@@ -5,10 +5,6 @@ const port = 3000;
 const { mintNFT } = require("./services/mintNFT");
 
 app.get("/ping", (req, res) => {
-  res.send(testFunction());
-});
-
-app.get("/ping", (req, res) => {
   res.send("Pong");
 });
 
