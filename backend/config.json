@@ -1,8 +1,0 @@
-{
-  "DB": {
-    "host": "18.216.240.29",
-    "user": "dev",
-    "password": "smrtguard1022",
-    "database": "tokengo"
-  }
-}
