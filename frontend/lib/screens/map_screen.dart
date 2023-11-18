@@ -182,7 +182,7 @@ class _MapScreenState extends State<MapScreen> {
           padding:
           EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
           child: SizedBox(
-            height: 300,
+            height: location.visited == 1 ? 350 : 300,
             child: Container(
                 decoration: const BoxDecoration(
                   color: kPrimaryDefaultBgColor,
@@ -215,6 +215,17 @@ class _MapScreenState extends State<MapScreen> {
                             fontSize: 24)),
                     const SizedBox(height: 12.0),
                     _buildImage(location),
+                    const SizedBox(height: 12.0),
+                    Visibility(
+                      visible: location.visited == 1,
+                      child: Text(location.isOG == 1
+                            ? "OG NFT" : "Regular NFT",
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.nunito(
+                              color: location.isOG == 1 ? Colors.green : Colors.blueAccent,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 24)),
+                    ),
                     Expanded(
                       child: Align(
                           alignment: Alignment.bottomCenter,
@@ -278,7 +289,7 @@ class _MapScreenState extends State<MapScreen> {
         child: RoundedButton(
             width: 340.0,
             height: 60.0,
-            text: "MINT",
+            text: location.visited == 0 ? "MINT" : "MINT AGAIN",
             textStyle: GoogleFonts.nunito(
                 color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
             color: const Color(0xFFF12C18),
