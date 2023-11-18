@@ -1,9 +1,3 @@
-List<Location> locations = [
-  Location(id: 1, name: "Istanbul Congress Center", latitude: 41.0463638, longitude: 28.9889354),
-  Location(id: 2, name: "Taksim Square", latitude: 41.037666, longitude: 28.9848298),
-  Location(id: 3, name: "Galata Tower", latitude: 41.0256299, longitude: 28.9731427),
-];
-
 class Location {
   Location({
     required this.id,

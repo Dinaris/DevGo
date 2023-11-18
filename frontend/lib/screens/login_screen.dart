@@ -6,7 +6,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../cubits/login_cubit.dart';
-import '../models/location.dart';
 import '../theme/constants.dart';
 import '../utils/validators.dart';
 
@@ -140,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
       },
       child: RoundedButton(
           width: double.infinity,
-          height: 60.0, //getProportionateScreenHeight(60.0),
+          height: 60.0,
           text: "Login",
           textStyle: GoogleFonts.nunito(
               color: Colors.white,
@@ -148,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
               fontWeight: FontWeight.w700),
           color: kPrimaryTextColor2,
           textColor: Colors.white,
-          borderRadius: 10.0, //getProportionateScreenWidth(10.0)
+          borderRadius: 10.0,
       ),
     );
   }
@@ -156,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
   _navigateToMapScreen() async {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => MapScreen(locations: locations)),
+      MaterialPageRoute(builder: (context) => const MapScreen()),
     );
   }
 }

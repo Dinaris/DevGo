@@ -1,22 +1,24 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
+import 'package:dev_go/models/custom_location.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:loader_overlay/loader_overlay.dart';
 
+import '../components/rounded_button.dart';
 import '../models/location.dart';
+import '../repositories/location_repository.dart';
 import '../theme/constants.dart';
 
 class MapScreen extends StatefulWidget {
   static String routeName = "/map";
 
   const MapScreen({
-    Key? key, required this.locations,
+    Key? key,
   }) : super(key: key);
-
-  final List<Location> locations;
 
   @override
   State<MapScreen> createState() => _MapScreenState();
@@ -26,6 +28,7 @@ class _MapScreenState extends State<MapScreen> {
   BitmapDescriptor? markerIcon;
 
   List<Marker> markers = [];
+  final ILocationRepository locationRepository = LocationRepository();
 
   @override
   void initState() {
@@ -43,30 +46,33 @@ class _MapScreenState extends State<MapScreen> {
       zoom: 17,
     );
 
-    return GoogleMap(
-      myLocationButtonEnabled: true,
-      mapType: MapType.normal,
-      markers: Set.from(markers),
-      initialCameraPosition: initialCameraPosition,
-      onMapCreated: (GoogleMapController controller) async {
-        setState(() {
-          _addMarkers(widget.locations);
-        });
+    return LoaderOverlay(
+      child: GoogleMap(
+        myLocationButtonEnabled: true,
+        mapType: MapType.normal,
+        markers: Set.from(markers),
+        initialCameraPosition: initialCameraPosition,
+        onMapCreated: (GoogleMapController controller) async {
+          final locations = await locationRepository.getLocations();
+          setState(() {
+            _addMarkers(locations);
+          });
 
-        Future.delayed(
-            const Duration(milliseconds: 750),
-                () => controller.animateCamera(
-                CameraUpdate.newLatLngBounds(
-                    _boundsFromLatLngList(
-                        widget.locations.map((location) => LatLng(
-                            location.latitude.toDouble(),
-                            location.longitude.toDouble())).toList()
-                    ),
-                    30
-                )
-            )
-        );
-      },
+          Future.delayed(
+              const Duration(milliseconds: 750),
+                  () => controller.animateCamera(
+                  CameraUpdate.newLatLngBounds(
+                      _boundsFromLatLngList(
+                          locations.map((location) => LatLng(
+                              location.latitude.toDouble(),
+                              location.longitude.toDouble())).toList()
+                      ),
+                      30
+                  )
+              )
+          );
+        },
+      ),
     );
   }
 
@@ -95,8 +101,18 @@ class _MapScreenState extends State<MapScreen> {
     for (final location in locations) {
       markers.add(Marker(
           markerId: MarkerId(location.id.toString()),
-          infoWindow: InfoWindow(title: location.name, onTap: () {
-            _showStartMintingDialog(context, true, location);
+          infoWindow: InfoWindow(title: location.name, onTap: () async {
+            bool isNearby = false;
+            context.loaderOverlay.show();
+            try {
+              isNearby = await locationRepository.isUserNearbyLocation(
+                  CustomLocation(
+                      latitude: location.latitude.toDouble(),
+                      longitude: location.longitude.toDouble()));
+            } finally {
+              context.loaderOverlay.hide();
+            }
+            _showStartMintingDialog(isNearby, location);
           }),
           icon: markerIcon ?? BitmapDescriptor.defaultMarker,
           position: LatLng(
@@ -123,7 +139,6 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   _showStartMintingDialog(
-      BuildContext context,
       bool isNearby,
       Location location,
       ) {
@@ -173,12 +188,72 @@ class _MapScreenState extends State<MapScreen> {
                             fontWeight: FontWeight.w800,
                             fontSize: 24)),
                     const SizedBox(height: 12.0),
-
+                    Expanded(
+                      child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: Padding(
+                              padding: EdgeInsets.only(
+                                  bottom: isNearby ? 10.0 : 45.0),
+                              child: isNearby
+                                  ? _buildMintButton()
+                                  : _buildTooFarWarning())),
+                    )
                   ],
                 )),
           ),
         );
       },
+    );
+  }
+
+  _buildMintButton() {
+    bool isTapped = false;
+
+    return TextButton(
+        onPressed: () async {
+          if (isTapped) {
+            return;
+          }
+
+          // allow to click again only after 2 seconds to prevent double tap
+          Future.delayed(const Duration(seconds: 2))
+              .then((_) => isTapped = false);
+          isTapped = true;
+
+          // TODO: call minting endpoint
+        },
+        child: RoundedButton(
+            width: 340.0,
+            height: 60.0,
+            text: "MINT",
+            textStyle: GoogleFonts.nunito(
+                color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
+            color: const Color(0xFFF12C18),
+            textColor: Colors.white,
+            borderRadius: 10.0));
+  }
+
+  Container _buildTooFarWarning() {
+    return Container(
+      alignment: Alignment.center,
+      width: 300,
+      height: 36,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10.0),
+        color: const Color(0xFFFFE3E3),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.info_outline, color: Colors.red, size: 16),
+          const SizedBox(width: 10),
+          Text(
+            "You are too far to mint",
+            style: GoogleFonts.nunito(
+                color: Colors.red, fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
     );
   }
 }
