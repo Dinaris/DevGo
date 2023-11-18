@@ -15,12 +15,10 @@ class LoginCubit extends Cubit<LoginState> {
 
   void onEmailChange(String value) {
     emit(state.copyWith(email: value));
-    print("@@@ email: ${state.email}");
   }
 
   void onPasswordChange(String value) {
     emit(state.copyWith(password: value));
-    print("@@@ password: ${state.password}");
   }
 
   Future<bool> onLogin() async {
