@@ -59,15 +59,14 @@ class _MapScreenState extends State<MapScreen> {
       overlayWidget: const DefaultProgressIndicator(),
       child: GoogleMap(
         myLocationButtonEnabled: true,
+        myLocationEnabled: true,
         mapType: MapType.normal,
         markers: Set.from(markers),
         initialCameraPosition: initialCameraPosition,
         onMapCreated: (GoogleMapController controller) async {
-          //var locations = List<Location>.empty();
           var history = List<UserHistory>.empty();
           context.loaderOverlay.show();
           try {
-            //locations = await locationRepository.getLocations();
             history = await nftRepository.getUserHistory(widget.userEmail);
           } finally {
             context.loaderOverlay.hide();
@@ -222,7 +221,9 @@ class _MapScreenState extends State<MapScreen> {
                             ? "OG NFT" : "Regular NFT",
                           textAlign: TextAlign.center,
                           style: GoogleFonts.nunito(
-                              color: location.isOG == 1 ? Colors.green : Colors.blueAccent,
+                              color: location.isOG == 1
+                                  ? Colors.green
+                                  : Colors.blueAccent,
                               fontWeight: FontWeight.w800,
                               fontSize: 24)),
                     ),
