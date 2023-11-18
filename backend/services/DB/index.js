@@ -5,8 +5,6 @@ var connection;
 
 function getInstance() {
   connection = mysql.createConnection(config.DB);
-
-  console.log("Connecting to DB...");
   connection.connect();
 
   return connection;
@@ -14,7 +12,6 @@ function getInstance() {
 
 function closeConnection(instance) {
   instance.end();
-  console.log("Close DB connection...");
 }
 
 function putToHistory(email, location_id, TRX_HASH) {
@@ -66,12 +63,46 @@ function getLocationById(id) {
   });
 }
 
+function getUsers() {
+  return new Promise(async (resolve, reject) => {
+    connection = getInstance();
+
+    const query = "SELECT * FROM users";
+
+    connection.query(query, function (error, results, fields) {
+      if (error) reject(error);
+      resolve(results ? results : []);
+    });
+
+    closeConnection(connection);
+  });
+}
+
+function getUserByEmail(email) {
+  return new Promise(async (resolve, reject) => {
+    connection = getInstance();
+
+    const query = "SELECT * FROM users WHERE email = ?";
+
+    connection.query(query, [email], function (error, results, fields) {
+      if (error) reject(error);
+      resolve(results ? results : []);
+    });
+
+    closeConnection(connection);
+  });
+}
+
 function getHistory(email) {
   return new Promise(async (resolve, reject) => {
     connection = getInstance();
 
     const query = `SELECT
         location.id,
+        location.name,
+        location.lon,
+        location.lat,
+        location.IMG_URL,
         CASE
             WHEN COUNT(his.id) > 0 THEN 1
             ELSE 0
@@ -102,4 +133,6 @@ module.exports = {
   putToHistory,
   getLocations,
   getLocationById,
+  getUsers,
+  getUserByEmail,
 };
