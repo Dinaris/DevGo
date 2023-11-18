@@ -1,15 +1,17 @@
 import 'package:dev_go/components/custom_text_form_field.dart';
 import 'package:dev_go/components/rounded_button.dart';
+import 'package:dev_go/screens/map_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../cubits/login_cubit.dart';
+import '../models/location.dart';
 import '../theme/constants.dart';
-import '../utils/size_config.dart';
 import '../utils/validators.dart';
 
 class LoginScreen extends StatefulWidget {
+  static String routeName = "/login";
 
   LoginScreen({Key? key}) : super(key: key);
 
@@ -76,7 +78,6 @@ class _LoginScreenState extends State<LoginScreen> {
             )),
         const SizedBox(height: 10),
         CustomTextFormField(
-            //initialValue: loginCubit.state.email,
             hintText: "Your Email",
             keyboardType: TextInputType.emailAddress,
             validator: Validators.validateEmail,
@@ -134,12 +135,12 @@ class _LoginScreenState extends State<LoginScreen> {
           return;
         }
         if (await loginCubit.onLogin()) {
-
+          _navigateToMapScreen();
         }
       },
       child: RoundedButton(
           width: double.infinity,
-          height: getProportionateScreenHeight(60.0),
+          height: 60.0, //getProportionateScreenHeight(60.0),
           text: "Login",
           textStyle: GoogleFonts.nunito(
               color: Colors.white,
@@ -147,8 +148,15 @@ class _LoginScreenState extends State<LoginScreen> {
               fontWeight: FontWeight.w700),
           color: kPrimaryTextColor2,
           textColor: Colors.white,
-          borderRadius: getProportionateScreenWidth(10.0)
+          borderRadius: 10.0, //getProportionateScreenWidth(10.0)
       ),
+    );
+  }
+
+  _navigateToMapScreen() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => MapScreen(locations: locations)),
     );
   }
 }
