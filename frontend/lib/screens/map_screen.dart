@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dev_go/components/default_progress_indicator.dart';
 import 'package:dev_go/models/custom_location.dart';
 import 'package:dev_go/repositories/nft_repository.dart';
 import 'package:dev_go/utils/dio_client.dart';
@@ -53,6 +54,9 @@ class _MapScreenState extends State<MapScreen> {
     );
 
     return LoaderOverlay(
+      overlayOpacity: 0,
+      overlayWholeScreen: false,
+      overlayWidget: const DefaultProgressIndicator(),
       child: GoogleMap(
         myLocationButtonEnabled: true,
         mapType: MapType.normal,
@@ -259,7 +263,7 @@ class _MapScreenState extends State<MapScreen> {
           }
 
           Navigator.of(context).pop();
-          context.loaderOverlay.show();
+          context.loaderOverlay.show(widget: const DefaultProgressIndicator());
           try {
             // call minting endpoint
             final newList = await nftRepository.mint(email, location.id);
@@ -270,11 +274,6 @@ class _MapScreenState extends State<MapScreen> {
           } finally {
             context.loaderOverlay.hide();
           }
-
-          // allow to click again only after 2 seconds to prevent double tap
-          Future.delayed(const Duration(seconds: 2))
-              .then((_) => isTapped = false);
-          isTapped = true;
         },
         child: RoundedButton(
             width: 340.0,
