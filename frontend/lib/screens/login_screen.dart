@@ -42,6 +42,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  _buildLogo(),
+                  const SizedBox(height: 40),
                   _buildMessage(hintStyle),
                   _buildEmailField(loginCubit),
                   const SizedBox(height: 25),
@@ -110,6 +112,18 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  _buildLogo() {
+    return Center(
+        child: SizedBox(
+            width: 250,
+            height: 250,
+            child: Center(
+                child: ClipRRect(
+                    borderRadius: const BorderRadius.all(
+                        Radius.circular(50)),
+                    child: Image.asset("assets/images/token_go.jpeg")))));
+  }
+
   _buildMessage(TextStyle style) {
     return BlocBuilder<LoginCubit, LoginState>(
       buildWhen: (previous, current) => (previous != current),
@@ -117,8 +131,10 @@ class _LoginScreenState extends State<LoginScreen> {
         if (state.error.isNotEmpty) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 30.0),
-            child: Text(state.error,
-                style: style.copyWith(color: Colors.red)),
+            child: Center(
+              child: Text(state.error,
+                  style: style.copyWith(color: Colors.red)),
+            ),
           );
         } else {
           return const SizedBox.shrink();
@@ -134,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen> {
           return;
         }
         if (await loginCubit.onLogin()) {
-          _navigateToMapScreen();
+          _navigateToMapScreen(loginCubit.state.email);
         }
       },
       child: RoundedButton(
@@ -152,10 +168,10 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  _navigateToMapScreen() async {
+  _navigateToMapScreen(String email) async {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const MapScreen()),
+      MaterialPageRoute(builder: (context) => MapScreen(userEmail: email)),
     );
   }
 }

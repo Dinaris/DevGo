@@ -5,6 +5,7 @@ import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 
 import 'app.dart';
+import 'utils/app_path_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +30,7 @@ void main() async {
 
   // Initialize repositories/helpers here
   await CacheHelper.init();
+  await AppPathProvider.initPath();
 
   runApp(const TokenGoApp());
 }
